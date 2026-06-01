@@ -34,6 +34,13 @@
             <nav class="sidebar-menu">
                 <a href="#" class="menu-item active" id="menu-dash"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
                 <a href="/h2-console" target="_blank" class="menu-item" id="menu-h2"><i class="fa-solid fa-database"></i> Consola H2</a>
+                <div class="sidebar-h2-helper">
+                    <span class="helper-title">JDBC URL para H2:</span>
+                    <div class="copy-box" onclick="copyJdbcUrl()" title="Haga clic para copiar">
+                        <code id="jdbc-url-code">jdbc:h2:mem:carddb</code>
+                        <button class="btn-copy"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+                </div>
             </nav>
             <div class="sidebar-footer">
                 <div class="system-status-vertical">

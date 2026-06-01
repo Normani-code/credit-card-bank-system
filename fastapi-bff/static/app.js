@@ -920,3 +920,13 @@ function showToast(message, type = "success") {
         toast.classList.remove("visible");
     }, 4000);
 }
+
+function copyJdbcUrl() {
+    const text = "jdbc:h2:mem:carddb";
+    navigator.clipboard.writeText(text).then(() => {
+        showToast("¡URL JDBC copiada al portapapeles!", "success");
+    }).catch(err => {
+        console.error("Error al copiar:", err);
+        showToast("No se pudo copiar automáticamente. Selecciónalo manualmente.", "error");
+    });
+}
