@@ -127,6 +127,14 @@ async def get_dashboard_summary():
             logger.error(f"Error inesperado al construir el Dashboard: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Error agregando datos del Dashboard: {str(e)}")
 
+@app.get("/h2-console")
+async def redirect_to_h2_console():
+    """
+    Redirecciona al usuario a la consola H2 del Core Java
+    """
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url=f"{JAVA_BACKEND_URL}/h2-console/")
+
 # --- Proxy Endpoints ---
 
 @app.post("/api/v1/bff/clients")
