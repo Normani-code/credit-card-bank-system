@@ -1,0 +1,25 @@
+services:
+  # 1. Core Services (Java Backend)
+  - type: web
+    name: credit-card-bank-java-core
+    env: docker
+    dockerfilePath: k8s-devops/Dockerfile.java
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+
+  # 2. BFF Layer & Web UI (FastAPI)
+  - type: web
+    name: credit-card-bank-fastapi-bff
+    env: docker
+    dockerfilePath: k8s-devops/Dockerfile.fastapi
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: JAVA_BACKEND_URL
+        fromService:
+          name: credit-card-bank-java-core
+          type: web
+          property: host

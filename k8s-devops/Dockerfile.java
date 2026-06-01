@@ -1,8 +1,8 @@
 # Stage 1: Build application using Maven
 FROM maven:3.9.6-eclipse-temurin-17-alpine AS builder
 WORKDIR /app
-COPY ../java-backend/pom.xml .
-COPY ../java-backend/src ./src
+COPY java-backend/pom.xml .
+COPY java-backend/src ./src
 
 # Compile and package application bypassing test runs for build speed in CI
 RUN mvn clean package -DskipTests

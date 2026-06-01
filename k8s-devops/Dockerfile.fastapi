@@ -3,12 +3,12 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # Install dependencies
-COPY ../fastapi-bff/requirements.txt .
+COPY fastapi-bff/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application source
-COPY ../fastapi-bff/main.py .
-COPY ../fastapi-bff/static ./static
+COPY fastapi-bff/main.py .
+COPY fastapi-bff/static ./static
 
 # Configure secure execution context (non-root)
 RUN useradd -u 1001 appuser && chown -R appuser:appuser /app
