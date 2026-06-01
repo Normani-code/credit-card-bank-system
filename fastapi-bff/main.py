@@ -25,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-JAVA_BACKEND_URL = os.getenv("JAVA_BACKEND_URL", "http://localhost:8080")
+JAVA_BACKEND_URL = os.getenv("JAVA_BACKEND_URL", "http://localhost:8080").rstrip("/")
 
 # Resilience helper: async HTTP client
 async def forward_request(method: str, path: str, json_data: dict = None):
@@ -77,10 +77,11 @@ async def get_dashboard_summary():
     """
     async with httpx.AsyncClient() as client:
         try:
-            # 1. Fetch clients, cards, and recent transactions concurrently
-            clients_resp = await client.get(f"{JAVA_BACKEND_URL}/api/clients", timeout=4.0)
-            cards_resp = await client.get(f"{JAVA_BACKEND_URL}/api/cards", timeout=4.0)
-            txs_resp = await client.get(f"{JAVA_BACKEND_URL}/api/transactions/recent", timeout=4.0)
+            # 1. Fetch clients, cards, and recent transactions sequentially
+            # Use generous timeout for the first query to allow Spring Boot to wake up on Render Free Tier
+            clients_resp = await client.get(f"{JAVA_BACKEND_URL}/api/clients", timeout=25.0)
+            cards_resp = await client.get(f"{JAVA_BACKEND_URL}/api/cards", timeout=10.0)
+            txs_resp = await client.get(f"{JAVA_BACKEND_URL}/api/transactions/recent", timeout=10.0)
 
             # Check statuses
             if any(r.status_code != 200 for r in [clients_resp, cards_resp, txs_resp]):
@@ -116,12 +117,14 @@ async def get_dashboard_summary():
                 "recentTransactions": transactions
             }
 
-        except httpx.ConnectError:
+        except (httpx.ConnectError, httpx.TimeoutException) as e:
+            logger.error(f"Error de conexión o timeout con el Core Bancario: {str(e)}")
             raise HTTPException(
                 status_code=503, 
-                detail="El Core Bancario (Java Backend) se encuentra inactivo. No se pudo construir el Dashboard."
+                detail="El Core Bancario (Java Backend) está iniciando o inactivo. Por favor, espera unos segundos y recarga la página."
             )
         except Exception as e:
+            logger.error(f"Error inesperado al construir el Dashboard: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Error agregando datos del Dashboard: {str(e)}")
 
 # --- Proxy Endpoints ---
