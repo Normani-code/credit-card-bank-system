@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  java-backend-service:
+    build:
+      context: ..
+      dockerfile: k8s-devops/Dockerfile.java
+    container_name: bancolombia-java-backend
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8080 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: always
+
+  fastapi-bff-service:
+    build:
+      context: ..
+      dockerfile: k8s-devops/Dockerfile.fastapi
+    container_name: bancolombia-fastapi-bff
+    ports:
+      - "8000:8000"
+    environment:
+      - JAVA_BACKEND_URL=http://java-backend-service:8080
+    depends_on:
+      java-backend-service:
+        condition: service_healthy
+    restart: always

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco | Dashboard Financiero</title>
+    <meta name="description" content="Plataforma de gestión de medios de pago para Banco. Desarrollo robusto Java + FastAPI.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Local Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Diagrams.net (Draw.io) Static Viewer -->
+    <script type="text/javascript" src="https://viewer.diagrams.net/js/viewer-static.min.js"></script>
+    
+    <!-- Mermaid.js for sequence and flowcharts -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body class="dark-mode">
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <span class="logo-icon"><i class="fa-solid fa-building-columns"></i></span>
+                <div class="logo-text">
+                    <h1>Banco</h1>
+                    <span class="logo-badge">SaaS Portal</span>
+                </div>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active" id="menu-dash"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="system-status-vertical">
+                    <div class="status-indicator active" id="status-bff">
+                        <span class="dot"></span> BFF (FastAPI)
+                    </div>
+                    <div class="status-indicator active" id="status-core">
+                        <span class="dot"></span> Core (Java)
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <div class="main-content-wrapper">
+            <!-- Content Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h2>Dashboard Financiero</h2>
+                </div>
+                <div class="header-center">
+                    <div class="search-bar-container">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="global-search" placeholder="Buscar cliente, tarjeta o transacciones...">
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="user-profile">
+                        <button id="theme-toggle" class="btn-icon" title="Cambiar Tema">
+                            <i class="fa-solid fa-moon"></i>
+                        </button>
+                        <div class="profile-info">
+                            <img src="user_profile.jpg" alt="Avatar" class="avatar-img">
+                            <span class="username">Carlos Mauro Cuesta</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Horizontal Navigation Tab Bar -->
+            <nav class="main-tab-nav">
+                <button class="nav-tab-btn active" data-tab="tab-general">Resumen General</button>
+                <button class="nav-tab-btn" data-tab="tab-data">Análisis de Datos</button>
+                <button class="nav-tab-btn" data-tab="tab-transactions-ops">Procesos Transaccionales</button>
+                <button class="nav-tab-btn" data-tab="tab-uml-architecture">Diagrama UML</button>
+                <button class="nav-tab-btn" data-tab="tab-process-diagram">Diagrama de Procesos</button>
+                <button class="nav-tab-btn" data-tab="tab-reports-qa">Reportes</button>
+            </nav>
+
+            <!-- Tab Content Container -->
+            <main class="content-container">
+                <!-- Tab 1: Resumen General -->
+                <div class="main-tab-content active" id="tab-general">
+                    <!-- Metrics Row -->
+                    <section class="metrics-grid">
+                        <div class="metric-card glassmorphic">
+                            <div class="metric-icon bg-yellow"><i class="fa-solid fa-users"></i></div>
+                            <div class="metric-info">
+                                <span class="metric-label">Clientes Registrados</span>
+                                <h3 class="metric-value" id="val-clients">0</h3>
+                            </div>
+                        </div>
+                        <div class="metric-card glassmorphic">
+                            <div class="metric-icon bg-green"><i class="fa-solid fa-credit-card"></i></div>
+                            <div class="metric-info">
+                                <span class="metric-label">Tarjetas Activas</span>
+                                <h3 class="metric-value" id="val-cards">0 <span class="sub-val" id="val-blocked">/ 0 Bloqueadas</span></h3>
+                            </div>
+                        </div>
+                        <div class="metric-card glassmorphic">
+                            <div class="metric-icon bg-blue"><i class="fa-solid fa-wallet"></i></div>
+                            <div class="metric-info">
+                                <span class="metric-label">Fondos Totales Débito</span>
+                                <h3 class="metric-value" id="val-debit-balance">$0.00 COP</h3>
+                            </div>
+                        </div>
+                        <div class="metric-card glassmorphic">
+                            <div class="metric-icon bg-purple"><i class="fa-solid fa-chart-line"></i></div>
+                            <div class="metric-info">
+                                <span class="metric-label">Cupo Crédito Disp.</span>
+                                <h3 class="metric-value" id="val-credit-available">$0.00 COP</h3>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" id="credit-progress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Side-by-Side: Cards Carousel & Recent Transactions -->
+                    <div class="dashboard-grid grid-2 gap-6 mt-6">
+                        <!-- Cards Viewer Section -->
+                        <section class="card-section glassmorphic">
+                            <div class="section-header">
+                                <h2><i class="fa-solid fa-money-check-dollar"></i> Tarjetas Emitidas</h2>
+                                <span class="badge" id="cards-count">0 total</span>
+                            </div>
+                            <div id="client-filter-banner-placeholder"></div>
+                            <div class="cards-carousel" id="cards-container">
+                                <!-- Cards dynamically rendered here -->
+                                <div class="no-data-msg">
+                                    <i class="fa-solid fa-credit-card fa-3x mb-3 opacity-50"></i>
+                                    <p>No hay tarjetas emitidas. Crea un cliente y emite una tarjeta en el panel de acciones.</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Recent Transactions -->
+                        <section class="card-section glassmorphic">
+                            <div class="section-header">
+                                <h2><i class="fa-solid fa-clock-rotate-left"></i> Historial Reciente</h2>
+                            </div>
+                            <div class="transactions-list" id="transactions-container">
+                                <div class="no-data-msg">
+                                    <i class="fa-solid fa-receipt fa-2x mb-2 opacity-50"></i>
+                                    <p>No hay transacciones registradas.</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Análisis de Datos (Directorio de Clientes) -->
+                <div class="main-tab-content" id="tab-data">
+                    <section class="card-section glassmorphic">
+                        <div class="section-header">
+                            <h2><i class="fa-solid fa-address-book"></i> Directorio de Clientes y Cuentas</h2>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Documento</th>
+                                        <th>Correo</th>
+                                        <th>Teléfono</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clients-table-body">
+                                    <!-- Clients list rendered here -->
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">No hay clientes registrados en el sistema.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Tab 3: Procesos Transaccionales (Action Forms) -->
+                <div class="main-tab-content" id="tab-transactions-ops">
+                    <section class="control-panel glassmorphic">
+                        <div class="tab-headers">
+                            <button class="tab-btn active" data-tab="tab-client">Registrar Cliente</button>
+                            <button class="tab-btn" data-tab="tab-card">Emitir Tarjeta</button>
+                            <button class="tab-btn" data-tab="tab-transaction">Simular Transacción</button>
+                        </div>
+                        <div class="tab-content-container">
+                            <!-- Tab: Client -->
+                            <div class="tab-content active" id="tab-client">
+                                <form id="form-client" class="styled-form">
+                                    <div class="form-group">
+                                        <label for="client-name">Nombre Completo</label>
+                                        <input type="text" id="client-name" required placeholder="Ej. Juan Perez">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="client-doc">Número de Documento</label>
+                                        <input type="text" id="client-doc" required placeholder="Ej. 10203040">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="client-email">Correo Electrónico</label>
+                                        <input type="email" id="client-email" required placeholder="Ej. juan@bancolombia.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="client-phone">Teléfono</label>
+                                        <input type="text" id="client-phone" placeholder="Ej. 3001234567">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <i class="fa-solid fa-user-plus"></i> Guardar Cliente
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Tab: Card -->
+                            <div class="tab-content" id="tab-card">
+                                <form id="form-card" class="styled-form">
+                                    <div class="form-group">
+                                        <label for="card-client-select">Seleccionar Cliente</label>
+                                        <select id="card-client-select" required>
+                                            <option value="" disabled selected>Seleccione un cliente...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="card-type-select">Tipo de Tarjeta</label>
+                                        <select id="card-type-select" required>
+                                            <option value="DEBIT">Débito (Ahorro)</option>
+                                            <option value="CREDIT">Crédito (Visa/Mastercard)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="group-credit-limit" style="display:none;">
+                                        <label for="card-credit-limit">Cupo de Crédito (COP)</label>
+                                        <input type="number" id="card-credit-limit" value="1000000" min="0" placeholder="Ej. 2000000">
+                                    </div>
+                                    <button type="submit" class="btn btn-secondary btn-block">
+                                        <i class="fa-solid fa-credit-card"></i> Emitir Tarjeta
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Tab: Transaction -->
+                            <div class="tab-content" id="tab-transaction">
+                                <form id="form-transaction" class="styled-form">
+                                    <div class="form-group">
+                                        <label for="tx-card-select">Seleccionar Tarjeta Origen</label>
+                                        <select id="tx-card-select" required>
+                                            <option value="" disabled selected>Seleccione una tarjeta...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tx-type-select">Tipo de Operación</label>
+                                        <select id="tx-type-select" required>
+                                            <option value="DEPOSIT">Depósito / Abono a Crédito</option>
+                                            <option value="PAYMENT">Compra / Pago de Servicio</option>
+                                            <option value="WITHDRAWAL">Retiro de Efectivo</option>
+                                            <option value="TRANSFER">Transferencia entre Tarjetas</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="group-tx-destination" style="display:none;">
+                                        <label for="tx-dest-card-select">Seleccionar Tarjeta Destino</label>
+                                        <select id="tx-dest-card-select">
+                                            <option value="" disabled selected>Seleccione tarjeta destino...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tx-amount">Monto (COP)</label>
+                                        <input type="number" id="tx-amount" required min="1" placeholder="Ej. 50000">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tx-desc">Descripción</label>
+                                        <input type="text" id="tx-desc" required placeholder="Ej. Supermercado Éxito">
+                                    </div>
+                                    <button type="submit" class="btn btn-accent btn-block">
+                                        <i class="fa-solid fa-money-bill-transfer"></i> Procesar Transacción
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Tab 4: Diagrama UML (Blueprint grid layout) -->
+                <div class="main-tab-content" id="tab-uml-architecture">
+                    <section class="card-section glassmorphic blueprint-container">
+                        <div class="blueprint-header">
+                            <div class="title-legend">
+                                <h3>Arquitectura de Plataforma de Pagos</h3>
+                                <span class="legend-sub">Diagrama: Arquitectura de Pagos V3.2 | Actualizado 14 Mar 2024</span>
+                            </div>
+                            <!-- Floating controls box matching the mockup -->
+                            <div class="floating-controls-box">
+                                <button type="button" class="ctrl-btn" id="uml-zoom-reset" title="Restablecer"><i class="fa-solid fa-rotate-right"></i></button>
+                                <button type="button" class="ctrl-btn" id="uml-grid-toggle" title="Alternar Cuadrícula"><i class="fa-solid fa-border-all"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="uml-diagram-viewport" id="uml-viewport">
+                            <div class="mxgraph" style="max-width:100%; border:1px solid transparent; margin: 0 auto; min-height: 550px;" data-mxgraph="{&quot;highlight&quot;: &quot;#fdcb04&quot;, &quot;nav&quot;: true, &quot;resize&quot;: true, &quot;toolbar&quot;: &quot;zoom layers tags lightbox&quot;, &quot;edit&quot;: &quot;_blank&quot;, &quot;xml&quot;: &quot;&lt;mxfile host=&#x27;app.diagrams.net&#x27; agent=&#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36&#x27; version=&#x27;24.6.4&#x27; etag=&#x27;rWpGqF7hHhK2y9rJp5O6&#x27; type=&#x27;device&#x27;&gt;&lt;diagram name=&#x27;FinTech_Card_Transaction_Manager&#x27; id=&#x27;eE0P2i5X2c_h2F_Q1aC4&#x27;&gt;&lt;mxGraphModel dx=&#x27;1428&#x27; dy=&#x27;854&#x27; grid=&#x27;1&#x27; gridSize=&#x27;10&#x27; guides=&#x27;1&#x27; tooltips=&#x27;1&#x27; connect=&#x27;1&#x27; arrows=&#x27;1&#x27; fold=&#x27;1&#x27; page=&#x27;1&#x27; pageScale=&#x27;1&#x27; pageWidth=&#x27;827&#x27; pageHeight=&#x27;1169&#x27; background=&#x27;#ffffff&#x27; math=&#x27;0&#x27; shadow=&#x27;0&#x27;&gt;&lt;root&gt;&lt;mxCell id=&#x27;0&#x27; /&gt;&lt;mxCell id=&#x27;1&#x27; parent=&#x27;0&#x27; /&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-1&#x27; value=&#x27;Usuario Cliente&#x27; style=&#x27;shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;60&#x27; y=&#x27;270&#x27; width=&#x27;30&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-2&#x27; value=&#x27;Analista de Operaciones&#x27; style=&#x27;shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;60&#x27; y=&#x27;470&#x27; width=&#x27;30&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-3&#x27; value=&#x27;Frontend Web (SPA)&amp;lt;br&amp;gt;(HTML5/CSS3/JS)&#x27; style=&#x27;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#000000;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;210&#x27; y=&#x27;280&#x27; width=&#x27;140&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-4&#x27; value=&#x27;FastAPI BFF (Python)&#x27; style=&#x27;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#000000;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;410&#x27; y=&#x27;280&#x27; width=&#x27;140&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-5&#x27; value=&#x27;Backend Java (Spring Boot)&amp;lt;br&amp;gt;(Microservicio)&#x27; style=&#x27;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#000000;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;610&#x27; y=&#x27;280&#x27; width=&#x27;140&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-6&#x27; value=&#x27;H2 Database (en memoria)&#x27; style=&#x27;shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#000000;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;630&#x27; y=&#x27;420&#x27; width=&#x27;100&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-7&#x27; value=&#x27;Crear Cliente&#x27; style=&#x27;html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;strokeColor=#10739e;endFill=0;&#x27; parent=&#x27;1&#x27; source=&#x27;pU20s3r6g4hT7f8z-1&#x27; target=&#x27;pU20s3r6g4hT7f8z-3&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;100&#x27; y=&#x27;290&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-8&#x27; value=&#x27;Emitir Tarjeta&#x27; style=&#x27;html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;strokeColor=#10739e;endFill=0;&#x27; parent=&#x27;1&#x27; source=&#x27;pU20s3r6g4hT7f8z-1&#x27; target=&#x27;pU20s3r6g4hT7f8z-3&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;100&#x27; y=&#x27;300&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-9&#x27; value=&#x27;Realizar Transacci\u00f3n&#x27; style=&#x27;html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;strokeColor=#10739e;endFill=0;&#x27; parent=&#x27;1&#x27; source=&#x27;pU20s3r6g4hT7f8z-1&#x27; target=&#x27;pU20s3r6g4hT7f8z-3&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;100&#x27; y=&#x27;310&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-10&#x27; value=&#x27;Bloquear/Desbloquear Tarjeta&#x27; style=&#x27;html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;strokeColor=#10739e;endFill=0;&#x27; parent=&#x27;1&#x27; source=&#x27;pU20s3r6g4hT7f8z-2&#x27; target=&#x27;pU20s3r6g4hT7f8z-3&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;100&#x27; y=&#x27;490&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-11&#x27; value=&#x27;Ver Dashboard&#x27; style=&#x27;html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;strokeColor=#10739e;endFill=0;&#x27; parent=&#x27;1&#x27; source=&#x27;pU20s3r6g4hT7f8z-1&#x27; target=&#x27;pU20s3r6g4hT7f8z-3&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;100&#x27; y=&#x27;320&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-12&#x27; value=&#x27;&#x27; style=&#x27;endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;&#x27; parent=&#x27;1&#x27; source=&#x27;pU20s3r6g4hT7f8z-3&#x27; target=&#x27;pU20s3r6g4hT7f8z-4&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry width=&#x27;50&#x27; height=&#x27;50&#x27; relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;380&#x27; y=&#x27;310&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;mxPoint x=&#x27;430&#x27; y=&#x27;310&#x27; as=&#x27;targetPoint&#x27; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-13&#x27; value=&#x27;Solicitudes Web (HTTP)&#x27; style=&#x27;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;350&#x27; y=&#x27;260&#x27; width=&#x27;130&#x27; height=&#x27;30&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-14&#x27; value=&#x27;&#x27; style=&#x27;endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;&#x27; parent=&#x27;1&#x27; source=&#x27;pU20s3r6g4hT7f8z-4&#x27; target=&#x27;pU20s3r6g4hT7f8z-5&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry width=&#x27;50&#x27; height=&#x27;50&#x27; relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;580&#x27; y=&#x27;310&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;mxPoint x=&#x27;630&#x27; y=&#x27;310&#x27; as=&#x27;targetPoint&#x27; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-15&#x27; value=&#x27;Llamadas REST (APIs)&#x27; style=&#x27;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;540&#x27; y=&#x27;260&#x27; width=&#x27;130&#x27; height=&#x27;30&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-16&#x27; value=&#x27;&#x27; style=&#x27;endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;&#x27; parent=&#x27;1&#x27; source=&#x27;pU20s3r6g4hT7f8z-5&#x27; target=&#x27;pU20s3r6g4hT7f8z-6&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry width=&#x27;50&#x27; height=&#x27;50&#x27; relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;680&#x27; y=&#x27;340&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;mxPoint x=&#x27;680&#x27; y=&#x27;420&#x27; as=&#x27;targetPoint&#x27; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-17&#x27; value=&#x27;Persistencia de Datos&#x27; style=&#x27;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;640&#x27; y=&#x27;360&#x27; width=&#x27;130&#x27; height=&#x27;30&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-18&#x27; value=&#x27;AWS EKS Cluster&#x27; style=&#x27;swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#000000;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;100&#x27; y=&#x27;580&#x27; width=&#x27;680&#x27; height=&#x27;250&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-19&#x27; value=&#x27;VPC&#x27; style=&#x27;rounded=1;whiteSpace=wrap;html=1;fillColor=#dce8f7;strokeColor=#97b0e4;&#x27; parent=&#x27;pU20s3r6g4hT7f8z-18&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;30&#x27; y=&#x27;60&#x27; width=&#x27;620&#x27; height=&#x27;170&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-20&#x27; value=&#x27;ALB (Application Load Balancer)&#x27; style=&#x27;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f7cd98;strokeColor=#d79b00;fontColor=#000000;&#x27; parent=&#x27;pU20s3r6g4hT7f8z-19&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;50&#x27; y=&#x27;40&#x27; width=&#x27;100&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-21&#x27; value=&#x27;FastAPI BFF Pods&#x27; style=&#x27;rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#000000;&#x27; parent=&#x27;pU20s3r6g4hT7f8z-19&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;230&#x27; y=&#x27;40&#x27; width=&#x27;100&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-22&#x27; value=&#x27;Java Backend Pods&#x27; style=&#x27;rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#000000;&#x27; parent=&#x27;pU20s3r6g4hT7f8z-19&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;400&#x27; y=&#x27;40&#x27; width=&#x27;100&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-23&#x27; value=&#x27;RDS PostgreSQL&#x27; style=&#x27;shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#000000;&#x27; parent=&#x27;pU20s3r6g4hT7f8z-19&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;540&#x27; y=&#x27;40&#x27; width=&#x27;80&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-24&#x27; value=&#x27;CloudWatch&#x27; style=&#x27;shape=image;html=1;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;imageAspect=0;image=https://cdn4.iconfinder.com/data/icons/amazon-web-services-aws-color-glyph/127/Amazon-CloudWatch_AWS-512.png&#x27; parent=&#x27;pU20s3r6g4hT7f8z-19&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;50&#x27; y=&#x27;110&#x27; width=&#x27;40&#x27; height=&#x27;40&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-25&#x27; value=&#x27;IAM&#x27; style=&#x27;shape=image;html=1;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;imageAspect=0;image=https://cdn4.iconfinder.com/data/icons/amazon-web-services-aws-color-glyph/127/Amazon-IAM_AWS-512.png&#x27; parent=&#x27;pU20s3r6g4hT7f8z-19&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;110&#x27; y=&#x27;110&#x27; width=&#x27;40&#x27; height=&#x27;40&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-26&#x27; value=&#x27;&#x27; style=&#x27;endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;&#x27; parent=&#x27;pU20s3r6g4hT7f8z-19&#x27; source=&#x27;pU20s3r6g4hT7f8z-20&#x27; target=&#x27;pU20s3r6g4hT7f8z-21&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry width=&#x27;50&#x27; height=&#x27;50&#x27; relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;180&#x27; y=&#x27;70&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;mxPoint x=&#x27;230&#x27; y=&#x27;70&#x27; as=&#x27;targetPoint&#x27; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-27&#x27; value=&#x27;Tr\u00e1fico HTTP/S&#x27; style=&#x27;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&#x27; parent=&#x27;pU20s3r6g4hT7f8z-19&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;140&#x27; y=&#x27;50&#x27; width=&#x27;100&#x27; height=&#x27;30&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-28&#x27; value=&#x27;&#x27; style=&#x27;endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;&#x27; parent=&#x27;pU20s3r6g4hT7f8z-19&#x27; source=&#x27;pU20s3r6g4hT7f8z-21&#x27; target=&#x27;pU20s3r6g4hT7f8z-22&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry width=&#x27;50&#x27; height=&#x27;50&#x27; relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;360&#x27; y=&#x27;70&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;mxPoint x=&#x27;410&#x27; y=&#x27;70&#x27; as=&#x27;targetPoint&#x27; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-29&#x27; value=&#x27;Llamadas REST&#x27; style=&#x27;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&#x27; parent=&#x27;pU20s3r6g4hT7f8z-19&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;320&#x27; y=&#x27;50&#x27; width=&#x27;100&#x27; height=&#x27;30&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-30&#x27; value=&#x27;&#x27; style=&#x27;endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;&#x27; parent=&#x27;pU20s3r6g4hT7f8z-19&#x27; source=&#x27;pU20s3r6g4hT7f8z-22&#x27; target=&#x27;pU20s3r6g4hT7f8z-23&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry width=&#x27;50&#x27; height=&#x27;50&#x27; relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;530&#x27; y=&#x27;70&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;mxPoint x=&#x27;580&#x27; y=&#x27;70&#x27; as=&#x27;targetPoint&#x27; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-31&#x27; value=&#x27;Lectura/Escritura DB&#x27; style=&#x27;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;&#x27; parent=&#x27;pU20s3r6g4hT7f8z-19&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;470&#x27; y=&#x27;50&#x27; width=&#x27;130&#x27; height=&#x27;30&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-32&#x27; value=&#x27;Maven Portable&#x27; style=&#x27;shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#e1d5e7;strokeColor=#9673a6;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;840&#x27; y=&#x27;190&#x27; width=&#x27;80&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-33&#x27; value=&#x27;Python 3.14.3&#x27; style=&#x27;shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;840&#x27; y=&#x27;290&#x27; width=&#x27;80&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-34&#x27; value=&#x27;Compila Java Backend&#x27; style=&#x27;endArrow=classic;html=1;rounded=0;&#x27; parent=&#x27;1&#x27; target=&#x27;pU20s3r6g4hT7f8z-5&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry width=&#x27;50&#x27; height=&#x27;50&#x27; relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;880&#x27; y=&#x27;250&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;mxPoint x=&#x27;750&#x27; y=&#x27;280&#x27; as=&#x27;targetPoint&#x27; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-35&#x27; value=&#x27;Ejecuta FastAPI BFF&#x27; style=&#x27;endArrow=classic;html=1;rounded=0;&#x27; parent=&#x27;1&#x27; target=&#x27;pU20s3r6g4hT7f8z-4&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry width=&#x27;50&#x27; height=&#x27;50&#x27; relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;880&#x27; y=&#x27;350&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;mxPoint x=&#x27;550&#x27; y=&#x27;340&#x27; as=&#x27;targetPoint&#x27; /&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-36&#x27; value=&#x27;run_project.ps1&#x27; style=&#x27;shape=document;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;830&#x27; y=&#x27;470&#x27; width=&#x27;100&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-37&#x27; value=&#x27;Orquesta Entorno Local&#x27; style=&#x27;endArrow=classic;html=1;rounded=0;&#x27; parent=&#x27;1&#x27; edge=&#x27;1&#x27;&gt;&lt;mxGeometry width=&#x27;50&#x27; height=&#x27;50&#x27; relative=&#x27;1&#x27; as=&#x27;geometry&#x27;&gt;&lt;mxPoint x=&#x27;880&#x27; y=&#x27;530&#x27; as=&#x27;sourcePoint&#x27; /&gt;&lt;mxPoint x=&#x27;780&#x27; y=&#x27;580&#x27; as=&#x27;targetPoint&#x27; /&gt;&lt;Array as=&#x27;points&#x27;&gt;&lt;mxPoint x=&#x27;880&#x27; y=&#x27;550&#x27; /&gt;&lt;mxPoint x=&#x27;780&#x27; y=&#x27;550&#x27; /&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-38&#x27; value=&#x27;Docs&#x27; style=&#x27;folder;whiteSpace=wrap;html=1;fontSize=10;fontColor=#333333;fillColor=#d5e8d4;strokeColor=#82b366;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;60&#x27; y=&#x27;870&#x27; width=&#x27;120&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-39&#x27; value=&#x27;Tests&#x27; style=&#x27;folder;whiteSpace=wrap;html=1;fontSize=10;fontColor=#333333;fillColor=#f8cecc;strokeColor=#b85450;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;240&#x27; y=&#x27;870&#x27; width=&#x27;120&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-40&#x27; value=&#x27;k8s-devops&#x27; style=&#x27;folder;whiteSpace=wrap;html=1;fontSize=10;fontColor=#333333;fillColor=#dae8fc;strokeColor=#6c8ebf;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;420&#x27; y=&#x27;870&#x27; width=&#x27;120&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-41&#x27; value=&#x27;java-backend&#x27; style=&#x27;folder;whiteSpace=wrap;html=1;fontSize=10;fontColor=#333333;fillColor=#f8cecc;strokeColor=#b85450;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;600&#x27; y=&#x27;870&#x27; width=&#x27;120&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-42&#x27; value=&#x27;fastapi-bff&#x27; style=&#x27;folder;whiteSpace=wrap;html=1;fontSize=10;fontColor=#333333;fillColor=#d5e8d4;strokeColor=#82b366;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;780&#x27; y=&#x27;870&#x27; width=&#x27;120&#x27; height=&#x27;60&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-43&#x27; value=&#x27;Arquitectura de Componentes de Alto Nivel&#x27; style=&#x27;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=16;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;300&#x27; y=&#x27;0&#x27; width=&#x27;370&#x27; height=&#x27;30&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-44&#x27; value=&#x27;Ecosistema de Despliegue Cloud (AWS EKS)&#x27; style=&#x27;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=16;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;300&#x27; y=&#x27;550&#x27; width=&#x27;380&#x27; height=&#x27;30&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-45&#x27; value=&#x27;Herramientas Locales de Desarrollo/Compilaci\u00f3n&#x27; style=&#x27;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=16;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;780&#x27; y=&#x27;140&#x27; width=&#x27;390&#x27; height=&#x27;30&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;mxCell id=&#x27;pU20s3r6g4hT7f8z-46&#x27; value=&#x27;Estructura del Repositorio&#x27; style=&#x27;text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=16;&#x27; parent=&#x27;1&#x27; vertex=&#x27;1&#x27;&gt;&lt;mxGeometry x=&#x27;360&#x27; y=&#x27;960&#x27; width=&#x27;190&#x27; height=&#x27;30&#x27; as=&#x27;geometry&#x27; /&gt;&lt;/mxCell&gt;&lt;/root&gt;&lt;/mxGraphModel&gt;&lt;/diagram&gt;&lt;/mxfile&gt;&quot;}"></div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Tab 5: Diagrama de Procesos (Zoomable Mermaid flow) -->
+                <div class="main-tab-content" id="tab-process-diagram">
+                    <section class="card-section glassmorphic">
+                        <div class="section-header">
+                            <h2><i class="fa-solid fa-money-bill-transfer"></i> Diagrama de Procesos (Secuencia Transaccional)</h2>
+                            <div class="zoom-controls">
+                                <button type="button" class="btn-zoom" id="btn-zoom-in" title="Acercar"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                                <button type="button" class="btn-zoom" id="btn-zoom-out" title="Alejar"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                                <button type="button" class="btn-zoom" id="btn-zoom-reset" title="Restablecer"><i class="fa-solid fa-rotate-left"></i></button>
+                            </div>
+                        </div>
+                        <div class="mermaid-diagram-container">
+                            <pre class="mermaid" id="process-mermaid">
+sequenceDiagram
+    autonumber
+    actor Cliente as Cliente (Usuario)
+    participant Web as Web UI (SPA)
+    participant BFF as FastAPI BFF (Python)
+    participant Java as Java Backend (Core)
+    participant DB as H2 Database (SQL)
+
+    Cliente->>Web: Clic en "Procesar Transacción"
+    Note over Web: Valida campos en Frontend (monto, descripción)
+    Web->>BFF: POST /api/v1/bff/transactions/transfer (JSON)
+    Note over BFF: Valida Token de sesión y formatea payload
+    BFF->>Java: POST /api/v1/transactions/transfer (HTTP REST)
+    
+    activate Java
+    Note over Java: Inicia transacción ACID (@Transactional)
+    Java->>DB: SELECT * FROM CARD WHERE ID = origen FOR UPDATE
+    Note over DB: Bloqueo Pesimista (Evita condiciones de carrera)
+    DB-->>Java: Retorna datos de Tarjeta Origen (Bloqueada)
+    
+    Java->>DB: SELECT * FROM CARD WHERE ID = destino FOR UPDATE
+    DB-->>Java: Retorna datos de Tarjeta Destino
+    
+    Note over Java: Verifica Fondos, Expiración y Estado Activo
+    
+    alt Datos Válidos & Fondos Suficientes
+        Java->>DB: UPDATE CARD SET balance = balance - monto WHERE ID = origen
+        Java->>DB: UPDATE CARD SET balance = balance + monto WHERE ID = destino
+        Java->>DB: INSERT INTO TRANSACTION (tipo, monto, estado) VALUES (TRANSFER, APPROVED)
+        Note over Java: Transacción exitosa, se liberan bloqueos (Commit)
+        Java-->>BFF: 200 OK (Transaction Approved)
+    else Fondos Insuficientes o Tarjeta Bloqueada
+        Java->>DB: INSERT INTO TRANSACTION (tipo, monto, estado) VALUES (TRANSFER, DECLINED)
+        Note over Java: Transacción rechazada, se liberan bloqueos (Rollback)
+        Java-->>BFF: 400 Bad Request (Error explicativo)
+    end
+    deactivate Java
+    
+    BFF-->>Web: Retorna respuesta estructurada y estadísticas actualizadas
+    Note over Web: Animación de éxito/error y actualización de UI
+    Web-->>Cliente: Muestra comprobante y saldo debitado
+                            </pre>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Tab 6: Reportes (DevOps & QA Simulator) -->
+                <div class="main-tab-content" id="tab-reports-qa">
+                    <section class="bottom-simulators grid-2 gap-6">
+                        <!-- DevOps & Cloud Environment Panel -->
+                        <div class="simulator-card glassmorphic">
+                            <div class="section-header">
+                                <h2><i class="fa-brands fa-aws"></i> AWS EKS Deployment Cloud</h2>
+                                <span class="badge badge-pulse">Pruebas continuas</span>
+                            </div>
+                            <p class="description-text">Visualiza el estado de la arquitectura simulando las sondas de salud (Liveness/Readiness) del clúster de Kubernetes en AWS.</p>
+                            <div class="eks-visualization">
+                                <div class="cluster-box">
+                                    <span class="cluster-title">EKS Cluster (us-east-1)</span>
+                                    <div class="pods-grid">
+                                        <div class="pod-node">
+                                            <i class="fa-solid fa-cube pod-icon status-green"></i>
+                                            <span class="pod-name">java-backend-pod-1</span>
+                                        </div>
+                                        <div class="pod-node">
+                                            <i class="fa-solid fa-cube pod-icon status-green"></i>
+                                            <span class="pod-name">java-backend-pod-2</span>
+                                        </div>
+                                        <div class="pod-node">
+                                            <i class="fa-solid fa-cube pod-icon status-green"></i>
+                                            <span class="pod-name">fastapi-bff-pod</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="cloud-metrics">
+                                    <div class="cloud-metric">
+                                        <span class="lbl">HPA CPU Scaling</span>
+                                        <span class="val font-mono">12% / 70%</span>
+                                    </div>
+                                    <div class="cloud-metric">
+                                        <span class="lbl">Database Connection</span>
+                                        <span class="val status-text-green">Conectado (H2 SQL)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Support & Bug Tracker Module -->
+                        <div class="simulator-card glassmorphic">
+                            <div class="section-header">
+                                <h2><i class="fa-solid fa-bug-slash"></i> QA Defect & Support Tracker</h2>
+                                <button class="btn btn-sm btn-outline" id="btn-report-bug">
+                                    <i class="fa-solid fa-circle-exclamation"></i> Registrar Defecto
+                                </button>
+                            </div>
+                            <p class="description-text">Simulación del flujo de mantenimiento de software (soporte, corrección y estabilización) requerido por la organización.</p>
+                            <div class="bugs-list-container">
+                                <ul class="bugs-list" id="bugs-container">
+                                    <!-- Dynamic bugs load here -->
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Quality Patterns Cards inside Report view as reference -->
+                    <div class="section-header mt-6">
+                        <h2><i class="fa-solid fa-shield-halved"></i> Patrones de Calidad, Resiliencia y TI</h2>
+                    </div>
+                    <div class="quality-patterns-grid mt-3">
+                        <div class="pattern-card">
+                            <div class="pattern-icon bg-yellow"><i class="fa-solid fa-network-wired"></i></div>
+                            <h4>Backend-For-Frontend (BFF)</h4>
+                            <p>Capa intermedia en FastAPI que desacopla el cliente de los microservicios internos. Optimiza payloads, realiza enrutamiento inteligente y gestiona caché/sesiones.</p>
+                            <span class="pattern-status">Implementado</span>
+                        </div>
+                        <div class="pattern-card">
+                            <div class="pattern-icon bg-green"><i class="fa-solid fa-lock"></i></div>
+                            <h4>Bloqueo Pesimista (ACID)</h4>
+                            <p>Implementación de <code>FOR UPDATE</code> en base de datos para transacciones críticas de débito/crédito, garantizando consistencia estricta ante operaciones concurrentes.</p>
+                            <span class="pattern-status">Implementado</span>
+                        </div>
+                        <div class="pattern-card">
+                            <div class="pattern-icon bg-blue"><i class="fa-solid fa-shield-halved"></i></div>
+                            <h4>Enmascaramiento de Datos (PII)</h4>
+                            <p>Protección de datos sensibles (números de tarjeta expuestos como <code>**** **** **** 1234</code> y ocultamiento de CVV) para cumplir con estándares PCI-DSS.</p>
+                            <span class="pattern-status">Implementado</span>
+                        </div>
+                        <div class="pattern-card">
+                            <div class="pattern-icon bg-purple"><i class="fa-solid fa-heart-pulse"></i></div>
+                            <h4>Resiliencia y Circuit Breaker</h4>
+                            <p>Políticas de retry y fallback del BFF FastAPI que manejan caídas o lentitud en el core Java de forma elegante, manteniendo la UX sin errores de servidor genéricos.</p>
+                            <span class="pattern-status">Implementado</span>
+                        </div>
+                        <div class="pattern-card">
+                            <div class="pattern-icon bg-orange"><i class="fa-solid fa-vial"></i></div>
+                            <h4>Pirámide de Pruebas</h4>
+                            <p>Suite integral que cubre Unit Tests (JUnit), Integration Tests (Spring MockMvc), pruebas de aceptación de API (Karate DSL) y pruebas de rendimiento (Apache JMeter).</p>
+                            <span class="pattern-status">Implementado</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">
+        <div class="toast-content">
+            <span id="toast-icon"></span>
+            <span id="toast-message">Mensaje</span>
+        </div>
+    </div>
+
+    <!-- Bug Report Modal -->
+    <div class="modal hidden" id="bug-modal">
+        <div class="modal-content glassmorphic">
+            <div class="modal-header">
+                <h3>Registrar Defecto de Calidad de Software</h3>
+                <button class="btn-close" id="btn-close-modal">&times;</button>
+            </div>
+            <form id="form-bug" class="styled-form">
+                <div class="form-group">
+                    <label for="bug-title">Título del Defecto</label>
+                    <input type="text" id="bug-title" required placeholder="Ej. Error de conexión con H2 base de datos">
+                </div>
+                <div class="form-group">
+                    <label for="bug-priority">Prioridad</label>
+                    <select id="bug-priority" required>
+                        <option value="CRITICAL">Critical (Bloqueante de entrega)</option>
+                        <option value="HIGH">High (Impacta funcionalidad principal)</option>
+                        <option value="MEDIUM" selected>Medium (Cosmético o workaround disponible)</option>
+                        <option value="LOW">Low (Sugerencia de mejora UX)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bug-desc">Comportamiento Esperado & Detalle</label>
+                    <textarea id="bug-desc" rows="3" required placeholder="Detalle técnico del error observado..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Registrar en Repositorio</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Injection -->
+    <script src="app.js"></script>
+</body>
+</html>
