@@ -19,7 +19,4 @@ services:
     plan: free
     envVars:
       - key: JAVA_BACKEND_URL
-        fromService:
-          name: credit-card-bank-java-core
-          type: web
-          property: host
+        value: http://credit-card-bank-java-core:8080
